@@ -4,7 +4,7 @@ const CommentsList = ({ comments }) => {
       <h3>Comments: </h3>
       {comments.map((comment) => (
         <div className="comment">
-          <h4>Comments By: {comment.postedBy}</h4>
+          <h4>Comments By: {comment.email}</h4>
           <p>{comment.text}</p>
         </div>
       ))}
