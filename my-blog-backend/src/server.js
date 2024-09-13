@@ -26,13 +26,11 @@ app.use(async (req, res, next) => {
 
 // Sample apis start.
 app.get("/hello/:name/goodbye/:otherName", (req, res) => {
-  console.log(req.params);
   const { name } = req.params;
   res.send(`Hello ${name}!!`);
 });
 
 app.post("/hello", (req, res) => {
-  console.log(req.body);
   res.send(`Hello ${req.body.name}!`);
 });
 // Sample apis end.
@@ -62,7 +60,7 @@ app.get("/api/articles/:name", async (req, res) => {
   const article = await db.collection("articles").findOne({ name });
   if (article) {
     const upvoteIds = article.upvoteIds || [];
-    article.canUpvote = uid && !upvoteIds.include(uid);
+    article.canUpvote = uid && !upvoteIds.includes(uid);
     res.json(article);
   } else {
     res.sendStatus(404).send(`The ${name} article doesn\'t exists`);
@@ -70,7 +68,7 @@ app.get("/api/articles/:name", async (req, res) => {
 });
 
 app.use((req, res, next) => {
-  if (req.user) {
+  if (!!req.user) {
     next();
   } else {
     res.sendStatus(401);
@@ -80,7 +78,6 @@ app.use((req, res, next) => {
 app.put("/api/articles/:name/upvote", async (req, res) => {
   const { name } = req.params;
   const { uid } = req.user;
-  console.log("put user", req.user);
   const article = await db.collection("articles").findOne({ name });
   if (article) {
     const upvoteIds = article.upvoteIds || [];
@@ -106,7 +103,6 @@ app.post("/api/articles/:name/comments", async (req, res) => {
   const { name } = req.params;
   const { text } = req.body;
   const { email } = req.user;
-  console.log("post user", req.user);
   // const article = articlesInfo.find((article) => article.name === name);
 
   await db.collection("articles").updateOne(
