@@ -2,6 +2,13 @@ import express from "express";
 import { connectToDB, db } from "./db.js";
 import fs from "fs";
 import admin from "firebase-admin";
+import path from "path";
+import { fileURLToPath } from "url";
+import "dotenv/config";
+
+const __fileName = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__fileName);
+// MongoDb cluster user -node-server: dTU5PCQpOrkKzIeS
 
 const credentials = JSON.parse(fs.readFileSync("./credentials.json"));
 admin.initializeApp({
@@ -10,6 +17,11 @@ admin.initializeApp({
 
 const app = express();
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "../build")));
+
+app.get(/^(?!\/api).+/, (req, res) => {
+  res.sendFile(path.join(__dirname, "../build/index.html"));
+});
 
 app.use(async (req, res, next) => {
   const { authtoken } = req.headers;
@@ -56,7 +68,6 @@ app.post("/hello", (req, res) => {
 app.get("/api/articles/:name", async (req, res) => {
   const { name } = req.params;
   const { uid } = req.user;
-  console.log("get user", req.user);
   const article = await db.collection("articles").findOne({ name });
   if (article) {
     const upvoteIds = article.upvoteIds || [];
@@ -122,9 +133,11 @@ app.post("/api/articles/:name/comments", async (req, res) => {
   }
 });
 
+const PORT = process.env.PORT || 8000;
+
 connectToDB(() => {
   console.log("Successfully Connected to DB");
-  app.listen(8000, () => {
-    console.log("Started listining on port 8000!");
+  app.listen(PORT, () => {
+    console.log("Started listining on port" + PORT);
   });
 });
